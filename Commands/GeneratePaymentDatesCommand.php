@@ -2,6 +2,7 @@
 
 namespace SalaryPaymentTool\Commands;
 
+use SalaryPaymentTool\Contracts\CalendarInterface;
 use SalaryPaymentTool\Contracts\ExporterInterface;
 use SalaryPaymentTool\Contracts\PaymentTypeInterface;
 
@@ -10,17 +11,17 @@ class GeneratePaymentDatesCommand
     public function __construct(
         private PaymentTypeInterface $salaryPayment,
         private PaymentTypeInterface $bonusPayment,
-        private ExporterInterface $exporter
+        private ExporterInterface $exporter,
+        private CalendarInterface $calendar
     ) {}
 
-    public function execute(): void
+    public function execute(\DateTimeInterface $startDate, \DateTimeInterface $endDate): void
     {
-        $currentDate = new \DateTime();
-        $endDate = (new \DateTime())->modify('last day of december');
+        $currentDate = clone $startDate;
         $data = [['Month', 'Salary Payment Date', 'Bonus Payment Date']];
 
         while ($currentDate <= $endDate) {
-            $month = $currentDate->format('F');
+            $month = $currentDate->format('F Y');
             $salaryDate = $this->salaryPayment->calculatePaymentDate($currentDate);
             $bonusDate = $this->bonusPayment->calculatePaymentDate($currentDate);
 
@@ -30,7 +31,7 @@ class GeneratePaymentDatesCommand
                 $bonusDate->format('Y-m-d')
             ];
 
-            $currentDate->modify('first day of next month');
+            $currentDate = $this->calendar->modifyDate($currentDate, 'first day of next month');
         }
 
         $this->exporter->export($data, 'payment_dates.csv');

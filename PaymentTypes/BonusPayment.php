@@ -9,12 +9,9 @@ class BonusPayment implements PaymentTypeInterface
 {
     public function __construct(private PaymentDateCalculator $calculator){}
 
-    public function calculatePaymentDate(\DateTime $forDate): \DateTime
+    public function calculatePaymentDate(\DateTimeInterface $forDate): \DateTimeInterface
     {
-        $fifteenth = (clone $forDate)->setDate($forDate->format('Y'), $forDate->format('m'), 15);
-        if ($fifteenth->format('N') >= 6) {
-            return $this->calculator->getNextWednesdayAfter($fifteenth);
-        }
-        return $fifteenth;
+        $fifteenth = $forDate->setDate($forDate->format('Y'), $forDate->format('m'), 15);
+        return $this->calculator->getNextWednesdayAfter($fifteenth);
     }
 }

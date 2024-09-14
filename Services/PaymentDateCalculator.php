@@ -2,19 +2,47 @@
 
 namespace SalaryPaymentTool\Services;
 
+use SalaryPaymentTool\Contracts\CalendarInterface;
+use SalaryPaymentTool\Exceptions\PaymentCalculationException;
+
 class PaymentDateCalculator
 {
-    public function getLastWorkingDayOfMonth(\DateTime $date): \DateTime
+    public function __construct(private CalendarInterface $calendar){}
+
+    public function getLastWorkingDayOfMonth(\DateTimeInterface $date): \DateTimeInterface
     {
-        $lastDay = (clone $date)->modify('last day of this month');
-        if ($lastDay->format('N') >= 6) {
-            $lastDay->modify('last friday');
+        try {
+            $lastDay = $this->calendar->getLastDayOfMonth($date);
+            while ($this->calendar->isWeekend($lastDay)) {
+                $lastDay = $this->calendar->modifyDate($lastDay, '-1 day');
+            }
+            return $lastDay;
         }
-        return $lastDay;
+        catch (\Exception $e) {
+            error_log("Unexpected error in getLastWorkingDayOfMonth: " . $e->getMessage());
+            throw new PaymentCalculationException(
+                "Failed to calculate last working day of month",
+                0,
+                $e
+            );
+        }
     }
 
-    public function getNextWednesdayAfter(\DateTime $date): \DateTime
+    public function getNextWednesdayAfter(\DateTimeInterface $date): \DateTimeInterface
     {
-        return (clone $date)->modify('next wednesday');
+        try {
+            if ($this->calendar->isWeekend($date)) {
+                return $this->calendar->modifyDate($date, 'next wednesday');
+            }
+            return $date;
+        }
+        catch (\Exception $e) {
+            error_log("Unexpected error in getNextWednesdayAfter: " . $e->getMessage());
+            throw new PaymentCalculationException(
+                "Failed to calculate next wednesday after",
+                0,
+                $e
+            );
+        }
     }
 }

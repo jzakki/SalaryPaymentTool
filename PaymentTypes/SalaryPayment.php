@@ -9,7 +9,7 @@ class SalaryPayment implements PaymentTypeInterface
 {
     public function __construct(private PaymentDateCalculator $calculator){}
 
-    public function calculatePaymentDate(\DateTime $forDate): \DateTime
+    public function calculatePaymentDate(\DateTimeInterface $forDate): \DateTimeInterface
     {
         return $this->calculator->getLastWorkingDayOfMonth($forDate);
     }

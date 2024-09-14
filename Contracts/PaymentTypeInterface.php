@@ -4,5 +4,5 @@ namespace SalaryPaymentTool\Contracts;
 
 interface PaymentTypeInterface
 {
-    public function calculatePaymentDate(\DateTime $forDate): \DateTime;
+    public function calculatePaymentDate(\DateTimeInterface $forDate): \DateTimeInterface;
 }

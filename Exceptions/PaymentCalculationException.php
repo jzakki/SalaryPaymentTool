@@ -2,7 +2,7 @@
 
 namespace SalaryPaymentTool\Exceptions;
 
-class PaymentCalculationException
+class PaymentCalculationException extends \Exception
 {
 
 }
