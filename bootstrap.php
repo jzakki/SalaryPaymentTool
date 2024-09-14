@@ -1,6 +1,5 @@
 <?php
 
-// bootstrap.php
 require_once __DIR__ . '/vendor/autoload.php';
 
 use SalaryPaymentTool\Commands\GeneratePaymentDatesCommand;
@@ -10,8 +9,18 @@ use SalaryPaymentTool\PaymentTypes\BonusPayment;
 use SalaryPaymentTool\Exporters\CsvExporter;
 use SalaryPaymentTool\Calendars\GregorianCalendar;
 
+// Parse command-line arguments
+$options = getopt("", ["output:"]);
+
+if (!isset($options['output'])) {
+    echo "Usage: php bootstrap.php --output=<filename>\n";
+    exit(1);
+}
+
+$outputFileName = $options['output'];
+
 // Set up the timezone (this could be configurable)
-$timezone = new DateTimeZone('Asia/Tehran');
+$timezone = new DateTimeZone('Europe/Berlin');
 
 // Set up the calendar
 $calendar = new GregorianCalendar($timezone);
@@ -30,4 +39,4 @@ $command = new GeneratePaymentDatesCommand($salaryPayment, $bonusPayment, $expor
 $startDate = new DateTime('first day of this month', $timezone);
 $endDate = new DateTime('last day of december', $timezone);
 
-$command->execute($startDate, $endDate);
+$command->execute($startDate, $endDate, $outputFileName);

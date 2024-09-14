@@ -15,7 +15,7 @@ class GeneratePaymentDatesCommand
         private CalendarInterface $calendar
     ) {}
 
-    public function execute(\DateTimeInterface $startDate, \DateTimeInterface $endDate): void
+    public function execute(\DateTimeInterface $startDate, \DateTimeInterface $endDate, string $outputFileName): void
     {
         $currentDate = clone $startDate;
         $data = [['Month', 'Salary Payment Date', 'Bonus Payment Date']];
@@ -34,7 +34,7 @@ class GeneratePaymentDatesCommand
             $currentDate = $this->calendar->modifyDate($currentDate, 'first day of next month');
         }
 
-        $this->exporter->export($data, 'payment_dates.csv');
-        echo "Payment dates have been exported to payment_dates.csv\n";
+        $this->exporter->export($data, $outputFileName);
+        echo "Payment dates have been exported to $outputFileName\n";
     }
 }
