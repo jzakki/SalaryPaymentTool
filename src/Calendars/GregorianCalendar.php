@@ -22,4 +22,10 @@ class GregorianCalendar implements CalendarInterface
     {
         return new \DateTime($date->format('Y-m-d') . ' ' . $modification, $this->timezone);
     }
+
+    public function modifyDate_Temp(\DateTimeInterface $date, string $modification): bool
+    {
+        // To do
+        return 0;
+    }
 }
