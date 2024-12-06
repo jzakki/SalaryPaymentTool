@@ -7,7 +7,14 @@
   },
   "autoload": {
     "psr-4": {
-      "SalaryPaymentTool\\": "src/"
+      "SalaryPaymentTool\\": "src/",
+      "Tests\\": "tests/"
     }
+  },
+  "require-dev": {
+    "phpunit/phpunit": "^11.3"
+  },
+  "scripts": {
+    "test": "phpunit"
   }
 }
