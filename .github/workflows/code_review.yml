@@ -24,4 +24,4 @@ jobs:
           pip install openai
 
       - name: Run AI Code Analysis
-        run: python ai_code_review.py
+        run: python scripts/ai_code_review.py
