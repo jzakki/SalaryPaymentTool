@@ -1,9 +1,15 @@
 import openai
 import os
 import subprocess
+import requests
 
 # Set your OpenAI API key
 openai.api_key = os.getenv("OPENAI_API_KEY")
+
+# GitHub repository details
+GITHUB_TOKEN = os.getenv("GIT_TOKEN")  # Set this in GitHub secrets
+REPO = os.getenv("GITHUB_REPOSITORY")  # Automatically available in GitHub Actions
+PR_NUMBER = os.getenv("PR_NUMBER")  # Passed as an environment variable in the workflow
 
 def get_changed_files():
     """
@@ -34,6 +40,20 @@ def analyze_code_with_ai(file_diff):
     )
     return response.choices[0].text.strip()
 
+def post_comment_to_pr(feedback, file_name):
+    """
+    Posts feedback as a comment on the pull request using the GitHub API.
+    """
+    url = f"https://api.github.com/repos/{REPO}/issues/{PR_NUMBER}/comments"
+    headers = {"Authorization": f"Bearer {GITHUB_TOKEN}"}
+    data = {"body": f"### Feedback for `{file_name}`\n\n{feedback}"}
+
+    response = requests.post(url, json=data, headers=headers)
+    if response.status_code == 201:
+        print(f"Feedback for {file_name} posted successfully.")
+    else:
+        print(f"Failed to post feedback for {file_name}: {response.status_code} {response.content}")
+
 def main():
     # Get the list of changed files
     changed_files = get_changed_files()
@@ -42,27 +62,19 @@ def main():
         print("No changed files detected.")
         return
 
-    print(f"Changed files: {changed_files}")
-
     # Iterate over each file and analyze the changes
     for file in changed_files:
-        print(f"\nAnalyzing file: {file}")
-
         # Get the diff of the file
         file_diff = get_file_diff(file)
 
         if not file_diff.strip():
-            print(f"No changes detected in file: {file}")
-            continue
+            continue  # Skip files with no changes
 
         # Analyze the code with AI
         feedback = analyze_code_with_ai(file_diff)
 
-        # Output feedback
-        print(f"\nFeedback for {file}:\n{feedback}\n")
-        # Save feedback to a file
-        with open(f"{file}_feedback.txt", "w") as f:
-            f.write(f"Feedback for {file}:\n{feedback}\n")
+        # Post feedback as a comment to the pull request
+        post_comment_to_pr(feedback, file)
 
 if __name__ == "__main__":
     main()
