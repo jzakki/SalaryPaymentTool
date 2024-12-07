@@ -12,7 +12,7 @@ REPO = os.getenv("GITHUB_REPOSITORY")
 PR_NUMBER = os.getenv("PR_NUMBER")
 
 # Print debug information for local testing
-print(f"GITHUB_TOKEN: {'Set' if GITHUB_TOKEN else 'Not Set'}")
+print(f"GITHUB_TOKEN: {GITHUB_TOKEN}")
 print(f"REPO: {REPO}")
 print(f"PR_NUMBER: {PR_NUMBER}")
 
