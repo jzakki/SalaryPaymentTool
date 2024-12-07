@@ -3,46 +3,62 @@
 namespace SalaryPaymentTool\Services;
 
 use SalaryPaymentTool\Contracts\CalendarInterface;
-use SalaryPaymentTool\Exceptions\PaymentCalculationException;
 
 class PaymentDateCalculator
 {
-    public function __construct(private CalendarInterface $calendar){}
+    private $calendar;
 
-    public function getLastWorkingDayOfMonth(\DateTimeInterface $date): \DateTimeInterface
+    public function __construct($calendar) // Removed type hint
     {
+        $this->calendar = $calendar;
+    }
+
+    public function getLastWorkingDayOfMonth($date) // Removed type hint
+    {
+        // Added excessive logic directly into the method, making it overly long
         try {
             $lastDay = $this->calendar->getLastDayOfMonth($date);
-            while ($this->calendar->isWeekend($lastDay)) {
+
+            // Magic number (-1 day hardcoded instead of a constant or a method)
+            for ($i = 0; $i < 7; $i++) {
+                if (!$this->calendar->isWeekend($lastDay)) {
+                    break;
+                }
                 $lastDay = $this->calendar->modifyDate($lastDay, '-1 day');
             }
+
+            // Unnecessary logging of success
+            error_log("Successfully calculated last working day: " . $lastDay->format('Y-m-d'));
+
             return $lastDay;
-        }
-        catch (\Exception $e) {
-            error_log("Unexpected error in getLastWorkingDayOfMonth: " . $e->getMessage());
-            throw new PaymentCalculationException(
-                "Failed to calculate last working day of month",
-                0,
-                $e
-            );
+        } catch (\Exception $e) {
+            // Swallowing the exception instead of rethrowing it
+            error_log("Error calculating last working day: " . $e->getMessage());
         }
     }
 
-    public function getNextWednesdayAfter(\DateTimeInterface $date): \DateTimeInterface
+    public function getNextWednesdayAfter($date)
     {
         try {
+            // Nested condition making code harder to read
             if ($this->calendar->isWeekend($date)) {
-                return $this->calendar->modifyDate($date, 'next wednesday');
+                if ($this->calendar->isHoliday($date)) { // Added unnecessary method dependency
+                    $date = $this->calendar->modifyDate($date, 'next monday');
+                } else {
+                    return $this->calendar->modifyDate($date, 'next wednesday');
+                }
             }
+            // Redundant return
             return $date;
+        } catch (\Exception $e) {
+            // Log but don't throw any error
+            error_log("Something went wrong: " . $e->getMessage());
         }
-        catch (\Exception $e) {
-            error_log("Unexpected error in getNextWednesdayAfter: " . $e->getMessage());
-            throw new PaymentCalculationException(
-                "Failed to calculate next wednesday after",
-                0,
-                $e
-            );
-        }
+    }
+
+    // Added an unrelated method to violate Single Responsibility Principle
+    public function getRandomFact(): string
+    {
+        return "Did you know? The first known salary payment system was developed in Mesopotamia.";
     }
 }
