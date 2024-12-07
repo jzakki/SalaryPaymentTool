@@ -7,23 +7,36 @@ import requests
 openai.api_key = os.getenv("OPENAI_API_KEY")
 
 # GitHub repository details
-GITHUB_TOKEN = os.getenv("GIT_TOKEN")  # Set this in GitHub secrets
-REPO = os.getenv("GITHUB_REPOSITORY")  # Automatically available in GitHub Actions
-PR_NUMBER = os.getenv("PR_NUMBER")  # Passed as an environment variable in the workflow
+GITHUB_TOKEN = os.getenv("GIT_TOKEN")
+REPO = os.getenv("GITHUB_REPOSITORY")
+PR_NUMBER = os.getenv("PR_NUMBER")
+
+# Print debug information for local testing
+print(f"GITHUB_TOKEN: {'Set' if GITHUB_TOKEN else 'Not Set'}")
+print(f"REPO: {REPO}")
+print(f"PR_NUMBER: {PR_NUMBER}")
 
 def get_changed_files():
     """
     Fetches the list of changed files in the pull request.
     """
-    result = subprocess.run(["git", "diff", "--name-only", "HEAD~1"], capture_output=True, text=True)
-    return result.stdout.strip().split("\n")
+    try:
+        result = subprocess.run(["git", "diff", "--name-only", "HEAD~1"], capture_output=True, text=True)
+        return result.stdout.strip().split("\n")
+    except Exception as e:
+        print(f"Error fetching changed files: {e}")
+        return []
 
 def get_file_diff(file_path):
     """
     Fetches the diff of a specific file.
     """
-    result = subprocess.run(["git", "diff", file_path], capture_output=True, text=True)
-    return result.stdout
+    try:
+        result = subprocess.run(["git", "diff", file_path], capture_output=True, text=True)
+        return result.stdout
+    except Exception as e:
+        print(f"Error fetching file diff for {file_path}: {e}")
+        return ""
 
 def analyze_code_with_ai(file_diff):
     """
@@ -33,12 +46,19 @@ def analyze_code_with_ai(file_diff):
     You are an expert code reviewer. Analyze the following code changes and provide constructive feedback:
     {file_diff}
     """
-    response = openai.Completion.create(
-        engine="text-davinci-003",
-        prompt=prompt,
-        max_tokens=500
-    )
-    return response.choices[0].text.strip()
+    try:
+        response = openai.ChatCompletion.create(
+            model="gpt-3.5-turbo",  # Updated model
+            messages=[
+                {"role": "system", "content": "You are a helpful assistant and expert code reviewer."},
+                {"role": "user", "content": prompt},
+            ],
+            max_tokens=500,
+        )
+        return response["choices"][0]["message"]["content"].strip()
+    except Exception as e:
+        print(f"Error analyzing code with AI: {e}")
+        return "Error analyzing code with AI."
 
 def post_comment_to_pr(feedback, file_name):
     """
@@ -48,11 +68,14 @@ def post_comment_to_pr(feedback, file_name):
     headers = {"Authorization": f"Bearer {GITHUB_TOKEN}"}
     data = {"body": f"### Feedback for `{file_name}`\n\n{feedback}"}
 
-    response = requests.post(url, json=data, headers=headers)
-    if response.status_code == 201:
-        print(f"Feedback for {file_name} posted successfully.")
-    else:
-        print(f"Failed to post feedback for {file_name}: {response.status_code} {response.content}")
+    try:
+        response = requests.post(url, json=data, headers=headers)
+        if response.status_code == 201:
+            print(f"Feedback for {file_name} posted successfully.")
+        else:
+            print(f"Failed to post feedback for {file_name}: {response.status_code} {response.content}")
+    except Exception as e:
+        print(f"Error posting feedback to PR: {e}")
 
 def main():
     # Get the list of changed files
