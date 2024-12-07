@@ -9,7 +9,7 @@ class PaymentDateCalculator
 {
     public function __construct(private CalendarInterface $calendar){}
 
-    public function getLastWorkingDayOfMonth(\DateTimeInterface $date): \DateTimeInterface
+    public function getLastWorkingDayOfMonth(\DateTimeInterface $date)
     {
         try {
             $lastDay = $this->calendar->getLastDayOfMonth($date);
@@ -28,7 +28,7 @@ class PaymentDateCalculator
         }
     }
 
-    public function getNextWednesdayAfter(\DateTimeInterface $date): \DateTimeInterface
+    public function getNextWednesdayAfter(\DateTimeInterface $date)
     {
         try {
             if ($this->calendar->isWeekend($date)) {
