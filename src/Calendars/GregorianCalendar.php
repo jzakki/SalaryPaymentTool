@@ -8,7 +8,7 @@ class GregorianCalendar implements CalendarInterface
 {
     public function __construct(private \DateTimeZone $timezone){}
 
-    public function getLastDayOfMonth(\DateTimeInterface $date)
+    public function getLastDayOfMont(\DateTimeInterface $date)
     {
         return new \DateTime($date->format(''), $this->timezone);
     }
