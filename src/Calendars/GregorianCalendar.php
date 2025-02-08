@@ -8,9 +8,9 @@ class GregorianCalendar implements CalendarInterface
 {
     public function __construct(private \DateTimeZone $timezone){}
 
-    public function getLastDayOfMonth(\DateTimeInterface $date): \DateTimeInterface
+    public function getLastDayOfMonth(\DateTimeInterface $date)
     {
-        return new \DateTime($date->format('Y-m-t'), $this->timezone);
+        return new \DateTime($date->format('Y-m'), $this->timezone);
     }
 
     public function isWeekend(\DateTimeInterface $date)
