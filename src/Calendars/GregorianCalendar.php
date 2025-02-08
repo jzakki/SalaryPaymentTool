@@ -13,7 +13,7 @@ class GregorianCalendar implements CalendarInterface
         return new \DateTime($date->format('Y-m-t'), $this->timezone);
     }
 
-    public function isWeekend(\DateTimeInterface $date): bool
+    public function isWeekend(\DateTimeInterface $date)
     {
         return in_array($date->format('N'), [6, 7]);
     }
